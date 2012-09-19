@@ -34,12 +34,13 @@ __version__ = "1.0"
 import os
 import sys
 import math
+import numpy as np
 import xml.etree.ElementTree as etree
 from copy import copy
-from simtk.openmm import Vec3
-from simtk.openmm.app.internal.pdbstructure import PdbStructure
-from simtk.openmm.app import Topology
-from simtk.unit import nanometers, angstroms, is_quantity, norm
+#from simtk.openmm import Vec3
+from pdbstructure import PdbStructure
+from topology import Topology
+
 import element as elem
 try:
     import numpy
@@ -119,10 +120,10 @@ class PDBFile(object):
                             pass
                     newAtom = top.addAtom(atomName, element, r)
                     atomByNumber[atom.serial_number] = newAtom
-                    pos = atom.get_position().value_in_unit(nanometers)
-                    coords.append(Vec3(pos[0], pos[1], pos[2]))
+                    pos = atom.get_position()
+                    coords.append((pos[0], pos[1], pos[2]))
         ## The atom positions read from the PDB file
-        self.positions = coords*nanometers
+        self.positions = np.array(coords)
         self.topology.setUnitCellDimensions(pdb.get_unit_cell_dimensions())
         self.topology.createStandardBonds()
         self.topology.createDisulfideBonds(self.positions)
@@ -148,15 +149,7 @@ class PDBFile(object):
         return self.topology
         
     def getPositions(self, asNumpy=False):
-        """Get the atomic positions.
-        
-        Parameters:
-         - asNumpy (boolean=False) if true, the values are returned as a numpy array instead of a list of Vec3s
-         """
-        if asNumpy:
-            if self._numpyPositions is None:
-                self._numpyPositions = numpy.array(self.positions.value_in_unit(nanometers))*nanometers
-            return self._numpyPositions
+        """Get the atomic positions."""
         return self.positions
 
     @staticmethod

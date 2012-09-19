@@ -33,7 +33,7 @@ __version__ = "1.0"
 
 import os
 import xml.etree.ElementTree as etree
-from simtk.unit import nanometers, sqrt
+#from simtk.unit import nanometers, sqrt
 
 class Topology(object):
     """Topology stores the topological information about a system.

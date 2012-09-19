@@ -34,9 +34,10 @@ __author__ = "Christopher M. Bruns"
 __version__ = "1.0"
 
 
-from simtk.openmm.vec3 import Vec3
-import simtk.unit as unit
-from .. import element
+#from simtk.openmm.vec3 import Vec3
+#import simtk.unit as unit
+import element
+#from .. import element
 import warnings
 import sys
 
@@ -694,11 +695,11 @@ class Atom(object):
         except:
             occupancy = 1.0
         try:
-            temperature_factor = float(pdb_line[60:66]) * unit.angstroms * unit.angstroms
+            temperature_factor = float(pdb_line[60:66])
         except:
-            temperature_factor = 0.0 * unit.angstroms * unit.angstroms
+            temperature_factor = 0.0
         self.locations = {}
-        loc = Atom.Location(alternate_location_indicator, Vec3(x,y,z) * unit.angstroms, occupancy, temperature_factor, self.residue_name_with_spaces)
+        loc = Atom.Location(alternate_location_indicator, [x,y,z], occupancy, temperature_factor, self.residue_name_with_spaces)
         self.locations[alternate_location_indicator] = loc
         self.default_location_id = alternate_location_indicator
         # segment id, element_symbol, and formal_charge are not always present
@@ -827,11 +828,7 @@ class Atom(object):
             long_res_name, self.chain_id, \
             self.residue_number, self.insertion_code)
         numbers = "%8.3f%8.3f%8.3f%6.2f%6.2f      " % (
-            self.x.value_in_unit(unit.angstroms), \
-            self.y.value_in_unit(unit.angstroms), \
-            self.z.value_in_unit(unit.angstroms), \
-            self.occupancy, \
-            self.temperature_factor.value_in_unit(unit.angstroms * unit.angstroms))
+            self.x, self.y, self.z, self.occupancy, self.temperature_factor)
         end =  "%-4s%2s" % (\
             self.segment_id, self.element_symbol)
         formal_charge = "  "

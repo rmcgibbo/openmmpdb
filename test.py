@@ -1,2 +1,7 @@
 import pdbfile
-pdbfile.PDBFile('/Users/rmcgibbo/local/msmbuilder/Tutorial/native.pdb')
+import IPython as ip
+
+pdb = pdbfile.PDBFile('/Users/rmcgibbo/local/msmbuilder/Tutorial/native.pdb')
+
+
+ip.embed()
