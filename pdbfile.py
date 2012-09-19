@@ -37,15 +37,10 @@ import math
 import numpy as np
 import xml.etree.ElementTree as etree
 from copy import copy
-#from simtk.openmm import Vec3
 from pdbstructure import PdbStructure
 from topology import Topology
-
 import element as elem
-try:
-    import numpy
-except:
-    pass
+
 
 class PDBFile(object):
     """PDBFile parses a Protein Data Bank (PDB) file and constructs a Topology and a set of atom positions from it.
@@ -121,13 +116,12 @@ class PDBFile(object):
                     newAtom = top.addAtom(atomName, element, r)
                     atomByNumber[atom.serial_number] = newAtom
                     pos = atom.get_position()
-                    coords.append((pos[0], pos[1], pos[2]))
+                    coords.append(pos)
         ## The atom positions read from the PDB file
         self.positions = np.array(coords)
         self.topology.setUnitCellDimensions(pdb.get_unit_cell_dimensions())
         self.topology.createStandardBonds()
         self.topology.createDisulfideBonds(self.positions)
-        self._numpyPositions = None
         
         # Add bonds based on CONECT records.
         
@@ -148,7 +142,7 @@ class PDBFile(object):
         """Get the Topology of the model."""
         return self.topology
         
-    def getPositions(self, asNumpy=False):
+    def getPositions(self):
         """Get the atomic positions."""
         return self.positions
 
@@ -217,8 +211,7 @@ class PDBFile(object):
         """
         boxSize = topology.getUnitCellDimensions()
         if boxSize is not None:
-            size = boxSize.value_in_unit(angstroms)
-            print >>file, "CRYST1%9.3f%9.3f%9.3f  90.00  90.00  90.00 P 1           1 " % size
+            print >>file, "CRYST1%9.3f%9.3f%9.3f  90.00  90.00  90.00 P 1           1 " % boxSize
     
     @staticmethod
     def writeModel(topology, positions, file=sys.stdout, modelIndex=None):
@@ -232,11 +225,9 @@ class PDBFile(object):
         """
         if len(list(topology.atoms())) != len(positions):
             raise ValueError('The number of positions must match the number of atoms') 
-        if is_quantity(positions):
-            positions = positions.value_in_unit(angstroms)
-        if any(math.isnan(norm(pos)) for pos in positions):
+        if np.any(np.isnan(positions)):
             raise ValueError('Particle position is NaN')
-        if any(math.isinf(norm(pos)) for pos in positions):
+        if np.any(np.isinf(positions)):
             raise ValueError('Particle position is infinite')
         atomIndex = 1
         posIndex = 0

@@ -32,8 +32,8 @@ __author__ = "Peter Eastman"
 __version__ = "1.0"
 
 import os
+import numpy as np
 import xml.etree.ElementTree as etree
-#from simtk.unit import nanometers, sqrt
 
 class Topology(object):
     """Topology stores the topological information about a system.
@@ -200,8 +200,8 @@ class Topology(object):
                 sg2 = cyx[j]._atoms[atomNames[j].index('SG')]
                 pos2 = positions[sg2.index]
                 delta = [x-y for (x,y) in zip(pos1, pos2)]
-                distance = sqrt(delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2])
-                if distance < 0.3*nanometers:
+                distance = np.sqrt(delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2])
+                if distance < 0.3: # this is supposed to be nm. I think we're good
                     self.addBond(sg1, sg2)
 
 class Chain(object):

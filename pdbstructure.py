@@ -34,10 +34,8 @@ __author__ = "Christopher M. Bruns"
 __version__ = "1.0"
 
 
-#from simtk.openmm.vec3 import Vec3
-#import simtk.unit as unit
 import element
-#from .. import element
+import numpy as np
 import warnings
 import sys
 
@@ -71,21 +69,20 @@ class PdbStructure(object):
 
     Fetch atomic coordinates of first atom:
     > print pdb.iter_positions().next()
-    [13.768, -8.431, 11.865] A
+    [13.768, -8.431, 11.865]
 
      or
 
     > print pdb.iter_atoms().next().position
-    [13.768, -8.431, 11.865] A
+    [13.768, -8.431, 11.865]
 
     Strip the length units from an atomic position:
-    > import simtk.unit
     > pos = pdb.iter_positions().next()
     > print pos
-    [13.768, -8.431, 11.865] A
-    > print pos / simtk.unit.angstroms
     [13.768, -8.431, 11.865]
-    > print pos / simtk.unit.nanometers
+    > print pos
+    [13.768, -8.431, 11.865]
+    > print pos
     [1.3768, -0.8431, 1.1865]
 
 
@@ -164,7 +161,7 @@ class PdbStructure(object):
             elif (pdb_line.find("TER") == 0 and pdb_line.split()[0] == "TER"):
                 self._current_model._current_chain._add_ter_record()
             elif (pdb_line.find("CRYST1") == 0):
-                self._unit_cell_dimensions = (float(pdb_line[6:15]), float(pdb_line[15:24]), float(pdb_line[24:33]))*unit.angstroms
+                self._unit_cell_dimensions = (float(pdb_line[6:15]), float(pdb_line[15:24]), float(pdb_line[24:33]))
             elif (pdb_line.find("CONECT") == 0):
                 atoms = [int(pdb_line[7:12])]
                 for pos in (12,17,22,27):
@@ -600,12 +597,12 @@ class Residue(object):
         TypeError: 'instancemethod' object is not iterable
         >>> for c in res.iter_positions():
         ...     print c
-        [40.714, -5.292, 12.123] A
-        [39.736, -5.883, 12.911] A
-        [40.339, -6.654, 14.087] A
-        [41.181, -7.53, 13.859] A
-        [38.949, -6.825, 12.002] A
-        [37.557, -7.514, 12.922] A
+        [ 40.714  -5.292  12.123]
+        [ 39.736  -5.883  12.911]
+        [ 40.339  -6.654  14.087]
+        [ 41.181  -7.53   13.859]
+        [ 38.949  -6.825  12.002]
+        [ 37.557  -7.514  12.922]
         """
         for atom in self:
             if include_alt_loc:
@@ -699,7 +696,7 @@ class Atom(object):
         except:
             temperature_factor = 0.0
         self.locations = {}
-        loc = Atom.Location(alternate_location_indicator, [x,y,z], occupancy, temperature_factor, self.residue_name_with_spaces)
+        loc = Atom.Location(alternate_location_indicator, np.array([x,y,z]), occupancy, temperature_factor, self.residue_name_with_spaces)
         self.locations[alternate_location_indicator] = loc
         self.default_location_id = alternate_location_indicator
         # segment id, element_symbol, and formal_charge are not always present
@@ -740,7 +737,7 @@ class Atom(object):
         >>> for c in atom.iter_locations():
         ...     print c
         ...
-        [6.167, 22.607, 20.046] A
+        [  6.167  22.607  20.046]
         """
         for alt_loc in self.locations:
             yield self.locations[alt_loc]
@@ -761,9 +758,9 @@ class Atom(object):
         >>> for c in atom.iter_coordinates():
         ...     print c
         ...
-        6.167 A
-        22.607 A
-        20.046 A
+        6.167
+        22.607
+        20.046
         """
         for coord in self.position:
             yield coord
@@ -884,15 +881,13 @@ class Atom(object):
             """
             Examples
 
-            >>> from simtk.openmm.vec3 import Vec3
-            >>> import simtk.unit as unit
-            >>> l = Atom.Location(' ', Vec3(1,2,3)*unit.angstroms, 1.0, 20.0*unit.angstroms**2, "XXX")
+            >>> l = Atom.Location(' ', [1,2,3], 1.0, 20.0, "XXX")
             >>> for c in l:
             ...     print c
             ...
-            1 A
-            2 A
-            3 A
+            1
+            2
+            3
             """
             for coord in self.position:
                 yield coord
@@ -926,11 +921,11 @@ if __name__=='__main__':
     assert a.residue_number == 299
     assert a.insertion_code == " "
     assert a.alternate_location_indicator == " "
-    assert a.x ==  6.167 * unit.angstroms
-    assert a.y == 22.607 * unit.angstroms
-    assert a.z == 20.046 * unit.angstroms
+    assert a.x ==  6.167
+    assert a.y == 22.607
+    assert a.z == 20.046
     assert a.occupancy == 1.00
-    assert a.temperature_factor == 8.12 * unit.angstroms * unit.angstroms
+    assert a.temperature_factor == 8.12
     assert a.segment_id == ""
     assert a.element_symbol == "C"
 
